@@ -73,9 +73,9 @@ public class ShoppingController {
     }
 
     @PostMapping("/shopping/changeQuantity")
-    public String changeQuantityInCart(@RequestParam("productId") Long productId,
-                                       @RequestParam("quantity") Integer quantity,
-                                       HttpServletRequest request,Principal principal) {
+    public ResponseEntity<?> changeQuantityInCart(@RequestParam("productId") Long productId,
+                                                  @RequestParam("quantity") Integer quantity,
+                                                  HttpServletRequest request, Principal principal) {
         String identifier = principal != null ? principal.getName() : request.getSession().getId();
         boolean isUserRegistered = principal != null;
 
@@ -86,9 +86,12 @@ public class ShoppingController {
                 shoppingCartService.removeItemFromCart(identifier, productId, Math.abs(quantity), isUserRegistered);
             }
         });
-        changeQuantityFuture.join();
-
-        return "redirect:/webShop/shopping/cart";
+        try {
+            changeQuantityFuture.join();
+            return ResponseEntity.ok().body(Map.of("success", true, "message", "Cart updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Failed to update cart"));
+        }
     }
 
     @GetMapping("/shopping/cartItemCount")
