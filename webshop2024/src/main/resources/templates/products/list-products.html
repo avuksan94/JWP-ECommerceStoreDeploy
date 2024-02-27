@@ -36,38 +36,43 @@
             });
         }
 
-        function handleAjaxPost(url, data, successMessage) {
-            $.ajax({
-                url: url,
-                type: 'POST',
-                data: data,
-                dataType: 'json', // Expecting JSON response
-                success: function(response) {
-                    if(response && response.success) {
-                        alert(successMessage);
-                    } else {
-                        // Handle case where response is not as expected
-                        alert('Operation completed, but check for issues.');
-                    }
-                    updateCartItemCount();
-                },
-                error: function() {
-                    // Generic error handling
-                    alert('Operation failed. Please try again.');
-                }
-            });
-        }
-
         $('.custom-add-button').click(function(event) {
-            event.preventDefault(); // Prevent default form submission
-            const productId = $(this).data('product-id');
-            handleAjaxPost('/webShop/shopping/addToCart', { productId: productId, quantity: 1 }, 'Item added to cart');
+            event.preventDefault();
+            const productId = $(this).attr('data-product-id');
+            $.post('/webShop/shopping/addToCart', { productId: productId, quantity: 1 }, function(response) {
+                if (response.success) {
+                    alert('Item added to cart');
+                    updateCartItemCount();
+                } else {
+                    alert(response.message); // Show the server response message
+                }
+            }, "json").fail(function(jqXHR, textStatus, errorThrown) {
+                alert("Failed to add item to cart. Server error.");
+            });
+        });
+
+        $('.custom-quantity-button').click(function(event) {
+            event.stopPropagation();
+            const productId = $(this).attr('data-product-id');
+            $('#selectedProductId').val(productId);
+            $('#quantityInput').val(1); // Reset quantity to 1 each time modal opens
+            $('#productQuantityModal').modal('show');
         });
 
         $('#confirmAddToCart').click(function() {
             const productId = $('#selectedProductId').val();
             const quantity = $('#quantityInput').val();
-            handleAjaxPost('/webShop/shopping/addToCart', { productId: productId, quantity: quantity }, 'Item added to cart with custom quantity');
+            $.post('/webShop/shopping/addToCart', { productId: productId, quantity: quantity }, function(response) {
+                if (response.success) {
+                    alert('Item added to cart with custom quantity');
+                    $('#productQuantityModal').modal('hide');
+                    updateCartItemCount();
+                } else {
+                    alert(response.message); // Show the server response message
+                }
+            }, "json").fail(function() {
+                alert("Failed to add item to cart with custom quantity.");
+            });
         });
     });
 </script>

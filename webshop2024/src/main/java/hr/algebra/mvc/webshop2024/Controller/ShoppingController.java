@@ -9,6 +9,7 @@ import hr.algebra.mvc.webshop2024.DAL.Entity.ProductImage;
 import hr.algebra.mvc.webshop2024.DAL.Entity.ShoppingCart;
 import hr.algebra.mvc.webshop2024.ViewModel.CartItemVM;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,10 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Controller
@@ -37,17 +35,22 @@ public class ShoppingController {
 
 
     @PostMapping("/shopping/addToCart")
-    public String addItemToCart(@RequestParam("productId") Long productId,
-                                @RequestParam("quantity") Integer quantity,
-                                HttpServletRequest request, Principal principal) {
+    @ResponseBody
+    public ResponseEntity<?> addItemToCart(@RequestParam("productId") Long productId,
+                                           @RequestParam("quantity") Integer quantity,
+                                           HttpServletRequest request, Principal principal) {
         String identifier = principal != null ? principal.getName() : request.getSession().getId();
         boolean isUserRegistered = principal != null;
 
-        CompletableFuture<Void> addItemFuture = CompletableFuture.runAsync(() ->
-                shoppingCartService.addItemToCart(identifier, productId, quantity, isUserRegistered));
-        addItemFuture.join();
+        try {
+            CompletableFuture<Void> addItemFuture = CompletableFuture.runAsync(() ->
+                    shoppingCartService.addItemToCart(identifier, productId, quantity, isUserRegistered));
+            addItemFuture.join();
 
-        return "redirect:/webShop/products/list";
+            return ResponseEntity.ok().body(Map.of("success", true, "message", "Item added to cart successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("success", false, "message", "Failed to add item to cart"));
+        }
     }
 
     @PostMapping("/shopping/removeFromCartCart")
