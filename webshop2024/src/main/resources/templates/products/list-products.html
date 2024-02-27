@@ -25,49 +25,51 @@
 <!-- Must have placeholder present on every page(jQuery needs to load before bootstrap) -->
 <div th:replace="${navbarPath}"></div>
 <script>
-    $(document).ready(function(){
-    updateCartItemCount();
+    $(document).ready(function() {
+        updateCartItemCount();
 
-     function updateCartItemCount() {
-         $.get('/webShop/shopping/cartItemCount', function(data) {
-             $('#cart-item-count').text(data);
-         }).fail(function() {
-             console.log('Failed to fetch cart item count');
-         });
-     }
+        function updateCartItemCount() {
+            $.get('/webShop/shopping/cartItemCount', function(data) {
+                $('#cart-item-count').text(data);
+            }).fail(function() {
+                console.log('Failed to fetch cart item count');
+            });
+        }
 
-     $('.custom-add-button').click(function(event) {
-         event.preventDefault(); // Prevent default action
-         const productId = $(this).attr('data-product-id'); // Use attr instead of data for consistency
-         $.post('/webShop/shopping/addToCart', { productId: productId, quantity: 1 }, function(response) {
-             alert('Item added to cart');
-             updateCartItemCount();
-         }).fail(function(jqXHR, textStatus, errorThrown) {
-             alert("Failed to add item to cart.");
-         });
-     });
+        function handleAjaxPost(url, data, successMessage) {
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: data,
+                dataType: 'json', // Expecting JSON response
+                success: function(response) {
+                    if(response && response.success) {
+                        alert(successMessage);
+                    } else {
+                        // Handle case where response is not as expected
+                        alert('Operation completed, but check for issues.');
+                    }
+                    updateCartItemCount();
+                },
+                error: function() {
+                    // Generic error handling
+                    alert('Operation failed. Please try again.');
+                }
+            });
+        }
 
-     $('.custom-quantity-button').click(function(event) {
-         event.stopPropagation(); // Prevent triggering the click event of parent elements
-         const productId = $(this).attr('data-product-id');
-         $('#selectedProductId').val(productId);
-         // Reset quantity to 1 each time modal opens or set to current value if needed
-         $('#quantityInput').val(1);
-         $('#productQuantityModal').modal('show');
-     });
+        $('.custom-add-button').click(function(event) {
+            event.preventDefault(); // Prevent default form submission
+            const productId = $(this).data('product-id');
+            handleAjaxPost('/webShop/shopping/addToCart', { productId: productId, quantity: 1 }, 'Item added to cart');
+        });
 
-     $('#confirmAddToCart').click(function() {
-         const productId = $('#selectedProductId').val();
-         const quantity = $('#quantityInput').val();
-         $.post('/webShop/shopping/addToCart', { productId: productId, quantity: quantity }, function(response) {
-             alert('Item added to cart with custom quantity');
-             $('#productQuantityModal').modal('hide');
-             updateCartItemCount();
-         }).fail(function() {
-             alert("Failed to add item to cart with custom quantity.");
-         });
-     });
- });
+        $('#confirmAddToCart').click(function() {
+            const productId = $('#selectedProductId').val();
+            const quantity = $('#quantityInput').val();
+            handleAjaxPost('/webShop/shopping/addToCart', { productId: productId, quantity: quantity }, 'Item added to cart with custom quantity');
+        });
+    });
 </script>
 
 <!-- Section-->
