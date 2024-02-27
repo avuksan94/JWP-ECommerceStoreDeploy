@@ -54,17 +54,22 @@ public class ShoppingController {
     }
 
     @PostMapping("/shopping/removeFromCartCart")
-    public String removeItemFromCart(@RequestParam("productId") Long productId,
-                                @RequestParam("quantity") Integer quantity,
-                                HttpServletRequest request,Principal principal) {
+    @ResponseBody
+    public ResponseEntity<?> removeItemFromCart(@RequestParam("productId") Long productId,
+                                                @RequestParam("quantity") Integer quantity,
+                                                HttpServletRequest request, Principal principal) {
         String identifier = principal != null ? principal.getName() : request.getSession().getId();
         boolean isUserRegistered = principal != null;
 
-        CompletableFuture<Void> removeItemFuture = CompletableFuture.runAsync(() ->
-                shoppingCartService.removeItemFromCart(identifier, productId, quantity, isUserRegistered));
-        removeItemFuture.join();
+        try {
+            CompletableFuture<Void> removeItemFuture = CompletableFuture.runAsync(() ->
+                    shoppingCartService.removeItemFromCart(identifier, productId, quantity, isUserRegistered));
+            removeItemFuture.join();
 
-        return "redirect:/webShop/products/list";
+            return ResponseEntity.ok().body(Map.of("success", true, "message", "Item removed from cart successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("success", false, "message", "Failed to remove item from cart"));
+        }
     }
 
     @PostMapping("/shopping/changeQuantity")
