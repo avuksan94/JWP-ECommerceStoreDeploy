@@ -20,11 +20,11 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <script>
-        $(document).ready(function(){
-          // Fetching the cart item count after the navbar has been loaded
+        $(document).ready(function() {
+            // Fetching the cart item count after the navbar has been loaded
             updateCartItemCount();
 
-         function updateCartItemCount() {
+            function updateCartItemCount() {
                 $.get('/webShop/shopping/cartItemCount', function(data) {
                     $('#cart-item-count').text(data);
                 }).fail(function() {
@@ -32,7 +32,7 @@
                 });
             }
 
-          $('.change-quantity').click(function() {
+            $('.change-quantity').click(function() {
                 const productId = $(this).data('product-id');
                 const changeType = $(this).data('change-type');
                 const quantityChange = changeType === 'increase' ? 1 : -1;
@@ -42,11 +42,17 @@
                         productId: productId,
                         quantity: quantityChange
                     },
-                    function() {
-                        window.location.reload();
-                    }
-                ).fail(function() {
-                    alert('Failed to update cart');
+                    function(response) {
+                        if (response.success) {
+                            window.location.reload(); // Reload the page to reflect the change
+                        } else {
+                            alert("Failed to update cart: " + response.message);
+                        }
+                    },
+                    'json'
+                ).fail(function(jqXHR) {
+                    console.log("Request failed: ", jqXHR.responseText);
+                    alert('Failed to update cart.');
                 });
             });
         });
