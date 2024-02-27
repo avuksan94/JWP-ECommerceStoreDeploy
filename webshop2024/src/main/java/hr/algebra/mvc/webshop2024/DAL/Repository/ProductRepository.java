@@ -14,7 +14,7 @@ public interface ProductRepository extends JpaRepository<Product,Long> {
     Product getProductByProductId(long productId);
 
     //findByName didnt work so i wrote my own query
-    @Query(value = "SELECT * FROM Products p WHERE p.name LIKE CONCAT('%', :keyword, '%')", nativeQuery = true)
+    @Query(value = "SELECT * FROM products p WHERE p.name LIKE CONCAT('%', :keyword, '%')", nativeQuery = true)
     List<Product> findByKeyword(@Param("keyword") String keyword);
 
 }
