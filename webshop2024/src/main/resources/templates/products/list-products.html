@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Product Info</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Favicon-->
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <!-- Bootstrap icons-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link rel="stylesheet" th:href="@{/css/shopProducts.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+</head>
+<body class="d-flex flex-column">
+<!-- Navigation-->
+<!-- Must have placeholder present on every page(jQuery needs to load before bootstrap) -->
+<div th:replace="${navbarPath}"></div>
+<script>
+    $(document).ready(function(){
+    updateCartItemCount();
+
+     function updateCartItemCount() {
+         $.get('/webShop/shopping/cartItemCount', function(data) {
+             $('#cart-item-count').text(data);
+         }).fail(function() {
+             console.log('Failed to fetch cart item count');
+         });
+     }
+
+     $('.custom-add-button').click(function(event) {
+         event.preventDefault(); // Prevent default action
+         const productId = $(this).attr('data-product-id'); // Use attr instead of data for consistency
+         $.post('/webShop/shopping/addToCart', { productId: productId, quantity: 1 }, function(response) {
+             alert('Item added to cart');
+             updateCartItemCount();
+         }).fail(function(jqXHR, textStatus, errorThrown) {
+             alert("Failed to add item to cart.");
+         });
+     });
+
+     $('.custom-quantity-button').click(function(event) {
+         event.stopPropagation(); // Prevent triggering the click event of parent elements
+         const productId = $(this).attr('data-product-id');
+         $('#selectedProductId').val(productId);
+         // Reset quantity to 1 each time modal opens or set to current value if needed
+         $('#quantityInput').val(1);
+         $('#productQuantityModal').modal('show');
+     });
+
+     $('#confirmAddToCart').click(function() {
+         const productId = $('#selectedProductId').val();
+         const quantity = $('#quantityInput').val();
+         $.post('/webShop/shopping/addToCart', { productId: productId, quantity: quantity }, function(response) {
+             alert('Item added to cart with custom quantity');
+             $('#productQuantityModal').modal('hide');
+             updateCartItemCount();
+         }).fail(function() {
+             alert("Failed to add item to cart with custom quantity.");
+         });
+     });
+ });
+</script>
+
+<!-- Section-->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div th:each="product : ${products}" class="col-md-4 mb-4">
+                <div class="card" style="width: 100%;">
+                    <a th:href="@{/webShop/products/showSelectedProduct(productId=${product.productId})}">
+                        <img class="card-img-top" th:src="@{${product.imageUrls}}" alt="Card image cap">
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${product.name}">Product Name</h5>
+                        <p class="card-text" th:text="${'Price: $' + product.price}">Price</p>
+                        <a href="#" class="btn custom-add-button bi bi-cart-plus" th:data-product-id="${product.productId}" data-product-id="">Add to cart</a>
+                        <button type="button" class="btn custom-addQuantity-button bi bi-bag-plus custom-quantity-button" th:data-product-id="${product.productId}" data-toggle="modal" data-target="#productQuantityModal">
+                            Custom Quantity
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Product Quantity Modal -->
+<div class="modal fade" id="productQuantityModal" tabindex="-1" aria-labelledby="productQuantityModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productQuantityModalLabel">Select Quantity</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addToCartForm">
+                    <div class="form-group">
+                        <label for="quantityInput">Quantity</label>
+                        <input type="number" class="form-control" id="quantityInput" value="1" min="1">
+                        <input type="hidden" id="selectedProductId">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="confirmAddToCart">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Footer-->
+<footer class="py-5 custom-gradient mt-auto">
+    <div class="container"><p class="m-0 text-center text-white">avuksan &copy; JWP 2024</p></div>
+</footer>
+<!-- Bootstrap core JS-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Core theme JS-->
+</body>
+</html>

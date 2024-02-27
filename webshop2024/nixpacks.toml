@@ -1,0 +1,5 @@
+[build]
+build_command = "mvn -f webshop2024/pom.xml clean install -DskipTests"
+
+[run]
+run_command = "mvn -f webshop2024/pom.xml spring-boot:run"
