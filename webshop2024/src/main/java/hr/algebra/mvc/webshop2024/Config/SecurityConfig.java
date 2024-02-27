@@ -100,6 +100,36 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/webShop/shopping/cartItemCount").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/webShop/shopping/cart").permitAll()
 
+                                //FOR REST CONTROLLERS
+                                // Swagger UI and API Docs
+                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/webjars/**", "/api-docs/**").permitAll()
+                                //Categories
+                                .requestMatchers(HttpMethod.GET, "/webShopApi/categories/allCategories").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/webShopApi/categories/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/webShopApi/categories").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/webShopApi/categories/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/webShopApi/categories/**").hasRole("ADMIN")
+
+                                //Subcategories
+                                .requestMatchers(HttpMethod.GET, "/webShopApi/subcategories/allSubcategories").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/webShopApi/subcategories/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/webShopApi/subcategories").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/webShopApi/subcategories/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/webShopApi/subcategories/**").hasRole("ADMIN")
+
+                                //Products
+                                .requestMatchers(HttpMethod.GET, "/webShopApi/products/allProducts").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/webShopApi/products/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/webShopApi/products").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/webShopApi/products/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/webShopApi/products/**").hasRole("ADMIN")
+
+                                //Shopping
+                                .requestMatchers(HttpMethod.GET, "/webShopApi/cartItems/allCartItems").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/webShopApi/cartItems/findByShoppingCartId/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/webShopApi/cartItems/findBySession/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/webShopApi/cartItems/findByUsername/**").hasRole("ADMIN")
+
                                 .requestMatchers(HttpMethod.GET, "/error").permitAll()
                 )
                 .formLogin(form ->
